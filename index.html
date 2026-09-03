@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Direct Managers Dashboard: денна, тижнева та місячна аналітика по акаунтах, лідах, чатах і оброблених коментарях.">
+  <title>Direct Managers Analytics</title>
+  <link rel="stylesheet" href="styles.css?v=2">
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div>
+        <div class="eyebrow">Direct Managers Analytics</div>
+        <h1>Динаміка direct по днях, тижнях і місяцях</h1>
+        <p class="subtitle">Чати, отримані номери, конверсія, оброблені коментарі та тренд кожного акаунта.</p>
+      </div>
+      <div class="hero-actions">
+        <div class="sync-status" id="syncStatus" aria-live="polite">
+          <span class="sync-dot"></span>
+          <span>Завантаження…</span>
+        </div>
+        <button class="button button-secondary" id="refreshButton" type="button">Оновити</button>
+      </div>
+    </header>
+
+    <section class="panel controls-panel" aria-label="Фільтри">
+      <div class="controls-top">
+        <div class="control-group">
+          <span class="control-label">Менеджер</span>
+          <div class="segmented" id="managerTabs"></div>
+        </div>
+
+        <div class="control-group">
+          <span class="control-label">Період аналізу</span>
+          <div class="segmented" id="granularityTabs">
+            <button class="segment" data-granularity="day" type="button">День</button>
+            <button class="segment active" data-granularity="week" type="button">Тиждень</button>
+            <button class="segment" data-granularity="month" type="button">Місяць</button>
+          </div>
+        </div>
+
+        <div class="control-group period-picker-group">
+          <span class="control-label">Обраний період</span>
+          <div class="period-picker">
+            <button class="icon-button" id="periodPrev" type="button" aria-label="Попередній період">←</button>
+            <div class="period-select-wrap" id="periodSelectWrap"></div>
+            <button class="icon-button" id="periodNext" type="button" aria-label="Наступний період">→</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div class="platform-filter">
+          <span class="control-label">Платформа</span>
+          <div class="platform-chips" id="platformChips"></div>
+        </div>
+
+        <details class="account-filter" id="accountFilter">
+          <summary>
+            <span>
+              <strong>Акаунти</strong>
+              <small id="accountSelectionSummary">Усі акаунти</small>
+            </span>
+            <span class="summary-chevron">⌄</span>
+          </summary>
+
+          <div class="account-filter-body">
+            <div class="account-filter-tools">
+              <label class="search-box">
+                <span aria-hidden="true">⌕</span>
+                <input id="accountSearch" type="search" placeholder="Знайти акаунт…" autocomplete="off">
+              </label>
+              <div class="account-actions">
+                <button class="small-button" id="selectAll" type="button">Вибрати всі</button>
+                <button class="small-button" id="clearAll" type="button">Очистити</button>
+              </div>
+            </div>
+            <div class="account-groups" id="accountGroups"></div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <div class="notice" id="dataNotice"></div>
+
+    <section class="kpi-grid" id="kpiGrid"></section>
+
+    <section class="panel trend-panel">
+      <div class="section-head">
+        <div>
+          <h2>Що змінилося проти попереднього періоду</h2>
+          <p id="comparisonSubtitle">Порівняння поточного та попереднього тижня.</p>
+        </div>
+        <div class="trend-legend">
+          <span class="trend-pill positive">↑ росте</span>
+          <span class="trend-pill neutral">→ стабільно</span>
+          <span class="trend-pill negative">↓ просідає</span>
+        </div>
+      </div>
+      <div class="comparison-grid" id="comparisonGrid"></div>
+    </section>
+
+    <section class="charts-grid">
+      <article class="panel chart-card">
+        <div class="chart-head">
+          <div>
+            <h2>Отримані номери</h2>
+            <p id="numbersChartSubtitle">Динаміка за останні періоди.</p>
+          </div>
+        </div>
+        <div class="chart-wrap" id="numbersChart"></div>
+      </article>
+
+      <article class="panel chart-card">
+        <div class="chart-head">
+          <div>
+            <h2>Чати</h2>
+            <p id="chatsChartSubtitle">Динаміка за останні періоди.</p>
+          </div>
+        </div>
+        <div class="chart-wrap" id="chatsChart"></div>
+      </article>
+
+      <article class="panel chart-card">
+        <div class="chart-head">
+          <div>
+            <h2>Оброблені коментарі</h2>
+            <p>Показуються лише для аркушів, де є числова колонка обробки коментарів.</p>
+          </div>
+        </div>
+        <div class="chart-wrap" id="commentsChart"></div>
+      </article>
+
+      <article class="panel chart-card">
+        <div class="chart-head">
+          <div>
+            <h2>Конверсія</h2>
+            <p>Отримані номери ÷ чати × 100%.</p>
+          </div>
+        </div>
+        <div class="chart-wrap" id="conversionChart"></div>
+      </article>
+    </section>
+
+    <section class="panel accounts-analytics">
+      <div class="section-head accounts-analytics-head">
+        <div>
+          <h2>Аналітика по кожному акаунту</h2>
+          <p>Факт за обраний період і зміна проти попереднього аналогічного періоду.</p>
+        </div>
+        <label class="sort-control">
+          <span>Сортування</span>
+          <select id="accountSort">
+            <option value="numbers-desc">Номери: найбільше</option>
+            <option value="trend-desc">Найбільший ріст</option>
+            <option value="trend-asc">Найбільше просідання</option>
+            <option value="chats-desc">Чати: найбільше</option>
+            <option value="comments-desc">Коментарі: найбільше</option>
+            <option value="name-asc">За назвою</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="accounts-table-wrap">
+        <table class="accounts-table">
+          <thead>
+            <tr>
+              <th>Акаунт</th>
+              <th>Чати</th>
+              <th>Номери</th>
+              <th>CR</th>
+              <th>Коментарі</th>
+              <th>Тренд лідів</th>
+            </tr>
+          </thead>
+          <tbody id="accountsTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="mobile-account-cards" id="mobileAccountCards"></div>
+    </section>
+
+    <section class="panel methodology">
+      <strong>Як рахується тренд:</strong>
+      день порівнюється з попереднім днем, календарний тиждень — з попереднім календарним тижнем, місяць — з попереднім місяцем.
+      Для акаунтів без показника «отримані номери» тренд лідів не виводиться. «КОМЕНТАРІ» як текстова примітка не рахується; враховуються тільки числові поля «оброблено/усього коментарів».
+    </section>
+  </main>
+
+  <noscript>Для роботи дашборду необхідно увімкнути JavaScript.</noscript>
+  <script src="app.js?v=2" defer></script>
+</body>
+</html>

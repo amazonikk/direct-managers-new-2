@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOBe2zcSr-Gv84HxrQzHrQUBvRDU9H9m1Z_NwDIV0LdiJYoVMx2Ge5OxdrIwJ-w_omGw/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwhdfi8nssdowkUUThKquT3LTLlE27HK5nL2QnWIsr9alrVfhLdjUqMgIXd7Dd33Mr9nA/exec";
   const FALLBACK_URL = "data/report.json";
   const AUTO_REFRESH_MS = 5 * 60 * 1000;
 
